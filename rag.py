@@ -1,9 +1,6 @@
 # rag.py
-import faiss
-import numpy as np
-from sentence_transformers import SentenceTransformer
-
-embedder = SentenceTransformer("all-MiniLM-L6-v2")
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 documents = [
     "Order delivery takes 3-5 days",
@@ -11,14 +8,11 @@ documents = [
     "You can track order using order ID"
 ]
 
-def get_embedding(text):
-    return embedder.encode(text)
-
-embeddings = [get_embedding(doc) for doc in documents]
-index = faiss.IndexFlatL2(len(embeddings[0]))
-index.add(np.array(embeddings).astype("float32"))
+vectorizer = TfidfVectorizer()
+doc_vectors = vectorizer.fit_transform(documents)
 
 def retrieve(query):
-    q_embed = np.array([get_embedding(query)]).astype("float32")
-    _, I = index.search(q_embed, k=2)
-    return [documents[i] for i in I[0]]
+    q_vec = vectorizer.transform([query])
+    sims = cosine_similarity(q_vec, doc_vectors)[0]
+    top_idx = sims.argsort()[-2:][::-1]  # top 2 matches
+    return [documents[i] for i in top_idx]

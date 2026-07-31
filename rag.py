@@ -1,9 +1,9 @@
 # rag.py
 import faiss
 import numpy as np
-from openai import OpenAI
+from sentence_transformers import SentenceTransformer
 
-client = OpenAI()
+embedder = SentenceTransformer("all-MiniLM-L6-v2")
 
 documents = [
     "Order delivery takes 3-5 days",
@@ -12,11 +12,7 @@ documents = [
 ]
 
 def get_embedding(text):
-    res = client.embeddings.create(
-        model="text-embedding-3-small",
-        input=text
-    )
-    return res.data[0].embedding
+    return embedder.encode(text)
 
 embeddings = [get_embedding(doc) for doc in documents]
 index = faiss.IndexFlatL2(len(embeddings[0]))

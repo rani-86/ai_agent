@@ -6,7 +6,14 @@ from dotenv import load_dotenv
 
 # load environment variables
 load_dotenv()
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+@app.get("/")
+def root():
+    return FileResponse("static/index.html")
 app = FastAPI()
 
 # request schema

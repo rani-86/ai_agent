@@ -1,120 +1,96 @@
 # AI Customer Support Agent (RAG)
 
-An AI-powered customer support chatbot that uses Retrieval-Augmented Generation (RAG) to answer domain-specific queries, backed by a fast open-source LLM (via Groq) and a lightweight TF-IDF retrieval pipeline.
+An intelligent, lightweight customer support assistant built with **FastAPI**, **Groq (Llama 3.3)**, and **Scikit-learn**. It uses Retrieval-Augmented Generation (RAG) with TF-IDF similarity search to deliver grounded, context-aware answers to user queries with per-session multi-turn memory.
 
-**Live Demo:** _[add your Render URL here once deployed]_
-**Repo:** https://github.com/rani-86/ai_agent
-
----
-
-## Features
-
-- **RAG-based responses** — retrieves relevant context from a knowledge base before generating an answer, so replies are grounded rather than hallucinated.
-- **Fast LLM inference** — powered by Groq's API running Llama 3.3, no paid API key required.
-- **Conversational memory** — maintains per-user chat history across a session.
-- **Tool integration** — detects order-related queries and looks up order status via a simple tool call.
-- **REST API** — built with FastAPI, exposing a single `/chat` endpoint.
-- **Web chat UI** — minimal HTML/JS frontend served directly by FastAPI.
+🚀 **[Live Demo](https://ai-agent-ey0o.onrender.com)** | 📁 **[GitHub Code](https://github.com/rani-86/ai_agent)**
 
 ---
 
-## Tech Stack
+## 🛠️ Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Backend | Python, FastAPI |
-| LLM | Groq API (Llama 3.3 70B) |
-| Retrieval | Scikit-learn (TF-IDF + cosine similarity) |
-| Memory | In-memory per-user store |
-| Deployment | Render (free tier) |
+* **Backend Framework:** FastAPI, Uvicorn
+* **LLM Engine:** Groq API (`llama-3.3-70b-versatile`)
+* **Retrieval / Vector Engine:** Scikit-learn (TF-IDF Vectorizer + Cosine Similarity)
+* **Frontend:** HTML5, Modern Dark CSS, Vanilla JavaScript
+* **Deployment:** Render (Free Tier)
 
 ---
 
-## Project Structure
+## 📋 Prerequisites
 
-```
-ai_agent/
-├── main.py          # FastAPI app and /chat endpoint
-├── agent.py         # Core agent logic — combines RAG context, memory, and tool output into a prompt
-├── rag.py           # TF-IDF based document retrieval
-├── memory.py        # Per-user conversational memory store
-├── tools.py         # Example tool: order status lookup
-├── requirements.txt # Python dependencies
-├── static/
-│   └── index.html   # Simple chat UI
-└── runtime.txt       # Pinned Python version for deployment
-```
+* Python 3.9+
+* A free **Groq API Key** from [console.groq.com](https://console.groq.com/)
 
 ---
 
-## How It Works
+## ⚙️ Installation & Setup
 
-1. A user sends a message to `POST /chat` with their `user_id` and `message`.
-2. `agent.py` retrieves relevant context from the knowledge base (`rag.py`), pulls prior conversation history (`memory.py`), and checks if the message needs a tool call (`tools.py`, e.g. order status lookups).
-3. All of this is combined into a single prompt and sent to the Groq LLM.
-4. The response is returned to the user and saved to memory for context in future turns.
-
----
-
-## Getting Started
-
-### Prerequisites
-- Python 3.11+
-- A free Groq API key from [console.groq.com](https://console.groq.com)
-
-### Setup
-
+1. **Install dependencies:**
 ```bash
-git clone https://github.com/rani-86/ai_agent.git
-cd ai_agent
 pip install -r requirements.txt
 ```
 
-Create a `.env` file in the project root:
+2. **Configure environment variables:**
 
+Create a `.env` file in the root directory:
 ```
 GROQ_API_KEY=your_groq_api_key_here
 ```
 
-### Run locally
-
+3. **Start the server:**
 ```bash
 uvicorn main:app --reload
 ```
 
-Visit `http://localhost:8000` for the chat UI, or send requests directly to `http://localhost:8000/chat`.
+4. **Access the application:**
+* Open [http://localhost:8000](http://localhost:8000) in your browser for the interactive web chat UI.
+* View interactive API documentation at [http://localhost:8000/docs](http://localhost:8000/docs).
 
-### Example request
+---
 
+## 🔌 API Usage
+
+**Endpoint:** `POST /chat`
+
+**Example Request (cURL):**
 ```bash
 curl -X POST http://localhost:8000/chat \
   -H "Content-Type: application/json" \
   -d '{"user_id": "user1", "message": "What is your return policy?"}'
 ```
 
----
-
-## Deployment
-
-This project is deployed on [Render](https://render.com) (free tier).
-
-- **Build command:** `pip install -r requirements.txt`
-- **Start command:** `uvicorn main:app --host 0.0.0.0 --port $PORT`
-- **Environment variable required:** `GROQ_API_KEY`
-
-> Note: Render's free tier spins down after inactivity, and in-memory conversation history resets on restart.
+**Example Response:**
+```json
+{
+  "user_id": "user1",
+  "response": "Our standard return policy is 7 days..."
+}
+```
 
 ---
 
-## Future Improvements
+## ☁️ Deployment (Render)
 
-- Persist conversational memory using a database (e.g. Supabase/Postgres or Redis) instead of an in-memory dict
-- Expand the knowledge base with real support documents
-- Add authentication for the API
-- Add response streaming for a more responsive chat experience
+This application is deployed as a Web Service on Render.
+
+* **Build Command:** `pip install -r requirements.txt`
+* **Start Command:** `uvicorn main:app --host 0.0.0.0 --port $PORT`
+* **Environment Variable:** `GROQ_API_KEY`
+
+> **Note:** On Render's free tier, the web service spins down after 15 minutes of inactivity. Cold starts may take ~30 seconds, and in-memory chat session history resets upon restart.
 
 ---
 
-## License
+## 🔮 Future Enhancements
 
-MIT
+* [ ] Persist conversation memory using Redis or PostgreSQL.
+* [ ] Support dynamic knowledge base expansion from external JSON/Markdown files.
+* [ ] Add Server-Sent Events (SSE) for real-time streaming responses.
+* [ ] Implement API rate limiting and token-based authentication.
+
+---
+
+## 📜 License
+
+Distributed under the MIT License.
+

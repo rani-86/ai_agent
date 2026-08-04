@@ -7,32 +7,24 @@ from pydantic import BaseModel
 
 from agent import agent
 
-# Load environment variables
 load_dotenv()
 
-# 1. Initialize FastAPI FIRST
 app = FastAPI()
 
-# 2. Mount static directory and setup static routes AFTER initializing app
+# Mount static files under /static
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
 def root():
     return FileResponse("static/index.html")
 
-# Request schema
 class Query(BaseModel):
     user_id: str
     message: str
 
-# API route
 @app.post("/chat")
 def chat(query: Query):
     response = agent(query.user_id, query.message)
-    return {
-        "user_id": query.user_id,
-        "response": response
-    }
     return {
         "user_id": query.user_id,
         "response": response

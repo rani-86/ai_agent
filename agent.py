@@ -1,15 +1,15 @@
 import os
-from openai import OpenAI
+from openai import AsyncOpenAI
 from rag import retrieve
 from tools import get_order_status
 from memory import get_memory, update_memory
 
-client = OpenAI(
+client = AsyncOpenAI(
     api_key=os.environ.get("GROQ_API_KEY"),
     base_url="https://api.groq.com/openai/v1"
 )
 
-def agent(user_id, message):
+async def agent(user_id, message):
     memory = get_memory(user_id)
     context = retrieve(message)
 
@@ -27,10 +27,17 @@ def agent(user_id, message):
     User: {message}
     """
 
-    response = client.chat.completions.create(
+    stream = await client.chat.completions.create(
         model="llama-3.3-70b-versatile",
-        messages=[{"role": "user", "content": prompt}]
+        messages=[{"role": "user", "content": prompt}],
+        stream=True
     )
-    reply = response.choices[0].message.content
+
+    reply = ""
+    async for chunk in stream:
+        delta = chunk.choices[0].delta.content
+        if delta:
+            reply += delta
+            yield delta
+
     update_memory(user_id, message, reply)
-    return reply

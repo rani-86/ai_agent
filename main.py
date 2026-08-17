@@ -1,13 +1,14 @@
 import os
 from dotenv import load_dotenv
+
+load_dotenv()
+
 from fastapi import FastAPI
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from agent import agent
-
-load_dotenv()
 
 app = FastAPI()
 
@@ -23,9 +24,8 @@ class Query(BaseModel):
     message: str
 
 @app.post("/chat")
-def chat(query: Query):
-    response = agent(query.user_id, query.message)
-    return {
-        "user_id": query.user_id,
-        "response": response
-    }
+async def chat(query: Query):
+    return StreamingResponse(
+        agent(query.user_id, query.message),
+        media_type="text/plain"
+    )

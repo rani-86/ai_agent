@@ -71,8 +71,8 @@ document.addEventListener('DOMContentLoaded', () => {
       // 3. Send request to FastAPI endpoint
       const response = await fetch('/chat', {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json' 
+        headers: {
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           user_id: userId,
@@ -84,13 +84,36 @@ document.addEventListener('DOMContentLoaded', () => {
         throw new Error(`Server status error: ${response.status}`);
       }
 
-      const data = await response.json();
       removeTypingIndicator();
 
-      // 4. Render Bot Response
-      if (data && data.response) {
-        appendMessage('assistant', data.response);
-      } else {
+      // 4. Stream the bot response in as it arrives
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let botText = "";
+      let contentDiv = null;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunkText = decoder.decode(value, { stream: true });
+        if (!chunkText) continue;
+
+        if (!contentDiv) {
+          const messageDiv = document.createElement('div');
+          messageDiv.classList.add('message', 'assistant');
+          contentDiv = document.createElement('div');
+          contentDiv.classList.add('message-content');
+          messageDiv.appendChild(contentDiv);
+          chatMessages.appendChild(messageDiv);
+        }
+
+        botText += chunkText;
+        contentDiv.textContent = botText;
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+
+      if (!botText) {
         appendMessage('assistant', "Received empty response from server.");
       }
 

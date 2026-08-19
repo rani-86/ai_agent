@@ -27,17 +27,22 @@ async def agent(user_id, message):
     User: {message}
     """
 
-    stream = await client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[{"role": "user", "content": prompt}],
-        stream=True
-    )
-
     reply = ""
-    async for chunk in stream:
-        delta = chunk.choices[0].delta.content
-        if delta:
-            reply += delta
-            yield delta
+    try:
+        stream = await client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            stream=True
+        )
+
+        async for chunk in stream:
+            delta = chunk.choices[0].delta.content
+            if delta:
+                reply += delta
+                yield delta
+    except Exception as e:
+        error_message = f"Error: {e}"
+        yield error_message
+        reply = error_message
 
     update_memory(user_id, message, reply)
